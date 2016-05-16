@@ -1,0 +1,144 @@
+<html>
+<!-- <html manifest="checkcode.manifest"> -->
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="author" content="RaoMing" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>统计图表</title>
+</head>
+
+<body>
+    <input id="sql" style="width: 95%" value="select sum(num) from taobao where date>20160300 group by date" />
+    <button onclick="loadData();">加载</button>
+        <div id="container" style="min-width: 310px; height: 400px; margin: 0 auto;width:98%">加载中...</div>
+        <!-- <script type="text/javascript" src="/js/jquery.min.js"></script> -->
+        <script src="/js/echarts.common.min.js"></script>
+        <script type="text/javascript">
+        var optionMap = {
+            title: {
+                text: '加载中...',
+                left: 'center'
+            },
+            tooltip: {
+                trigger: 'axis',
+                formatter: function(params) {
+                    console.info(params, typeof(params[0].data));
+                    var dt = params[0].data;
+                    if (typeof(dt) == 'object') {
+                        dt = dt.value;
+                    }
+                    var res = params[0].name + '：' + dt;
+                    return res;
+                }
+            },
+
+            xAxis: [{
+                type: 'category',
+                boundaryGap: true,
+                axisTick: {
+                    onGap: false
+                },
+                name: '日期',
+                data: [1]
+            }],
+            yAxis: [{
+                type: 'value',
+                scale: true,
+                splitNumber: 9,
+                boundaryGap: [0.05, 0.05],
+                splitArea: {
+                    show: true
+                }
+            }],
+            series: [{
+                type: 'line',
+                name: '值',
+                data: []
+            }]
+        }
+
+        var myChart = echarts.init(document.getElementById('container'));
+
+        myChart.setOption(optionMap);
+
+        function init(data) {
+            console.info(data);
+
+            data.sort(function(a,b){
+                return a.date-b.date;
+            });
+
+            var xdatas = [];
+            var dts = [];
+
+
+            var datas = [];
+            for (var i = 0; i < data.length; i++) {
+                var d = data[i];
+                xdatas.push(d.date);
+                dts.push(d._sumNum);
+            }
+
+            //console.info(params.series[0].data);
+            //params.series[0].data = datas;
+
+            myChart.setOption({
+                title: {
+                    text: window.sname + "(" + year + "-" + (month + 1) + ")"
+                },
+                xAxis: {
+                    data: xdatas
+                },
+                series: [{
+                    type: 'line',
+                    name: '值',
+                    smooth: true,
+                    symbolSize: 5,
+                    data: dts
+                }]
+            });
+
+            //$('#container').highcharts(params);
+        }
+        var now = new Date();
+        var year = now.getFullYear();
+        var month = now.getMonth();
+        var date = now.getDate();
+
+
+
+
+
+
+
+        function getUrl(url, fn) {
+            var req = new XMLHttpRequest();
+            req.open("GET", url, true);
+            console.debug("getUrl:", url);
+            req.onreadystatechange = function() {
+                if (req.readyState == 4) {
+                    if (req.status == 200) {
+                        if (req.responseText.indexOf("error:") == 0) {
+                            alert(req.responseText);
+                        }
+                        if (fn) fn(req.responseText);
+                    } else {
+                        console.info("getUrl Error:" + req.status + "\n" + url);
+                    }
+                }
+            };
+            req.send(null);
+        }
+
+        function loadData() {
+            getUrl("http://cloud.bmob.cn/dbb2b73b663b5e54/sql?sql=" + encodeURIComponent(document.getElementById("sql").value), function(d) {
+                console.info(d);
+                var data = JSON.parse(d);
+                init(data.results);
+            });
+        }
+        </script>
+</body>
+
+</html>

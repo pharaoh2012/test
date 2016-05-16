@@ -1,0 +1,156 @@
+<!-- <html> -->
+<html manifest="checkcode.manifest">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="author" content="RaoMing" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>checkcode</title>
+    <link rel="icon" id="faviconLink" href="icon/loading.png" type="image/png">
+    <style type="text/css">
+    .zoom {
+        zoom: 1;
+    }
+    
+    input {
+        width: 100%;
+        margin: 5px;
+        padding: 5px;
+    }
+    
+    #ckAutoload {
+        width: auto;
+    }
+    </style>
+</head>
+
+<body>
+    <div>
+        <input id="baseUrl" list="url_list" value="http://127.0.0.1:8877/" />
+        <datalist id="url_list">
+            <option label="8877" value="http://127.0.0.1:8877/" />
+            <option label="5055" value="http://127.0.0.1:5055/" />
+            <option label="office" value="http://office:5055@pharaoh2012-ngrok.daoapp.io/" />
+        </datalist>
+    </div>
+    <input id="ckAutoload" type="checkbox" checked value="自动刷新">
+    <label for="ckAutoload">自动刷新</label>
+    <br />
+    <img id="checkcodeImg" src="/checkcode/loading.gif" onclick="reloadcheckcode();" />
+    <label for="checkcodImg" id="infoLabel" onclick="reloadcheckcode();">点击图片刷新</label>
+    <input id="checkcode">
+    <input type="button" value="发送" onclick="setCheckcode();"></input>
+    <input type="button" onclick="refreshcode();" value="刷新验证码"></input>
+    <br />
+    <br />
+    <br />
+    <a href="list.html">运行列表</a>
+    <br />
+    <br />
+    <a href="bats.html">设置列表</a>
+    <br />
+    <br />
+    <a href="/">主页</a>
+    <br />
+    <br />
+    <a href="/chart.html">统计图</a>
+</body>
+<script type="text/javascript">
+var loadTimeId = 0;
+var noRunningCount = 0;
+var faviconLink = document.getElementById("faviconLink");
+
+function getBaseUrl() {
+    return document.getElementById('baseUrl').value;
+}
+
+function nextReload(msg, time) {
+    if (document.getElementById('ckAutoload').checked) {
+        loadTimeId = setTimeout(function() {
+            document.title = msg;
+            reloadcheckcode();
+        }, time);
+    }
+}
+
+function reloadcheckcode() {
+    if (loadTimeId) clearTimeout(loadTimeId);
+    document.getElementById('checkcodeImg').src = "/checkcode/loading.gif";
+    faviconLink.href = "icon/loading.png";
+    getUrl("/cmd?cmd=getcheckcodeimage&t=" + Date.now(), function(ret) {
+        var d = JSON.parse(ret);
+        if (d.error == 1) {
+            //alert(ret.msg);
+            document.getElementById('checkcodeImg').src = "/checkcode/norun.png";
+            faviconLink.href = "icon/norun.png";
+            document.getElementById("infoLabel").innerText = "点击图片刷新 ";
+            nextReload("15秒后刷新", 15000);
+            noRunningCount++;
+            if (noRunningCount >= 10) {
+                noRunningCount = 0;
+                document.getElementById('ckAutoload').checked = false;
+            }
+            return;
+        }
+        noRunningCount = 0;
+        if (d.image) {
+            document.getElementById('checkcodeImg').src = d.image;
+            faviconLink.href = "icon/yzm.png";
+            document.getElementById("infoLabel").innerText = "点击图片刷新 " + d.scriptName + " 退出时间：" + (d.exittime / 60).toFixed(1) + "分钟";
+            nextReload("20秒后刷新", 20000);
+            if (window.AndroidMain) {
+                window.AndroidMain.Notice("最新验证码");
+            }
+        } else {
+            document.getElementById('checkcodeImg').src = "/checkcode/nocode.png";
+            faviconLink.href = "icon/nocode.png";
+            document.getElementById("infoLabel").innerText = "点击图片刷新 " + d.scriptName + " 退出时间：" + (d.exittime / 60).toFixed(1) + "分钟";
+            nextReload("10秒后刷新", 10000);
+            return;
+        }
+    });
+    //document.getElementById('checkcodeImg').src = "/checkcode?" + Date.now();
+}
+reloadcheckcode();
+
+function refreshcode() {
+    getUrl("/cmd?cmd=reloadcheckcode&t=" + Date.now(), function() {
+        setTimeout(function() {
+            reloadcheckcode();
+        }, 1000);
+    });
+    //  "/cmd?cmd=reloadcheckcode"
+}
+
+function setCheckcode() {
+    var code = document.getElementById("checkcode").value;
+    if (code) {
+        getUrl("/cmd?cmd=setcheckcode&code=" + code, function(ret) {
+            console.info(ret);
+        });
+    }
+}
+
+function getUrl(url, fn) {
+    url = getBaseUrl() + url;
+    var req = new XMLHttpRequest();
+    req.open("GET", url, true);
+    console.debug("getUrl:", url);
+    req.onreadystatechange = function() {
+        if (req.readyState == 4) {
+            if (req.status == 200) {
+                if (req.responseText.indexOf("error:") == 0) {
+                    alert(req.responseText);
+                }
+                if (fn) fn(req.responseText);
+            } else {
+                console.info("getUrl Error:" + req.status + "\n" + url);
+                console.info("getUrl Error:" + req.status);
+            }
+        }
+    };
+    req.send(null);
+}
+</script>
+
+</html>

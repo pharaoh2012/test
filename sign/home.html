@@ -1,0 +1,36 @@
+<html manifest="checkcode.manifest">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="author" content="RaoMing" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>home</title>
+	<style type="text/css">
+	input {
+		width:98%;
+        margin: 5px;
+        padding: 5px;		
+	}
+	</style>
+</head>
+<body>
+
+<input id="url" />
+<input type="button" value="Go" onclick="gotourl();" />
+<br />
+<br />
+<a href="http://3002.office.pharaoh.myddns.com:8888/checkcode.html">最新验证码</a>
+<br />
+<br />
+<br />
+<br />
+<!-- <input type="button" value="震动" onclick="AndroidMain.Notice('测试提示消息');" /> -->
+
+
+<script type="text/javascript">
+	function gotourl () {
+		location.href = document.getElementById('url').value;
+	}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,36 @@
+<html>
+<head>
+	<title></title>
+<style type="text/css">
+	button {
+		width:100%;
+		margin: 3px;
+	}
+</style>
+</head>
+
+<body>
+<div id="main"></div>
+
+
+<script type="text/javascript">
+	(function(){
+		var html=[];
+		for (var i = 0; i < 100; i++) {
+			html.push("<button id='btn"+i+"'>"+i+"</button><br />");
+		};
+		document.getElementById('main').innerHTML = html.join("");
+	})();
+	document.onclick = function(e) {
+		if(e.target.tagName == "BUTTON") {
+			var txt = e.target.innerText;
+			console.info("#############"+txt);
+		}
+		
+	}
+
+
+</script>
+
+</body>
+</html>

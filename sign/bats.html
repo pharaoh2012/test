@@ -1,0 +1,162 @@
+<html manifest="checkcode.manifest">
+<!-- <html> -->
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="author" content="RaoMing" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>设置列表</title>
+    <style type="text/css">
+    .zoom {
+        zoom: 1;
+    }
+    
+    input {
+        width: 100%;
+        margin: 5px;
+        padding: 5px;
+    }
+    
+    ol li {
+        margin: 3px;
+        font-size: 20px;
+    }
+    
+    li.success {
+        color: green;
+    }
+    
+    li.fail {
+        color: red;
+    }
+    </style>
+</head>
+
+<body>
+    <div id="runinfo" onclick="reloadinfo();"></div>
+    <ol id="runlist" onclick="listClick();">
+    </ol>
+    <br />
+    <br />
+    <br />
+    <br />
+    <a href="checkcode.html">最新验证码</a>
+    <a href="list.html">运行列表</a>
+    <br />
+    <br />
+    <a href="/">主页</a>
+    <br />
+    <br />
+    <a href="/chart.html">统计图</a>
+</body>
+<script type="text/javascript">
+function reloadinfo() {
+    getUrl("/cmd?cmd=getinfo&t=" + Date.now(), function(ret) {
+        console.info(ret);
+        var json = JSON.parse(ret);
+        if (json.exittime == -1) {
+            document.getElementById("runinfo").innerText = "没有运行的程序";
+            return;
+        }
+        document.getElementById("runinfo").innerText = "正在运行“" + json.scriptName + "”  退出时间：" + (json.exittime / 60).toFixed(1) + "分钟";
+    });
+}
+reloadinfo();
+var configNames = [];
+(function getList() {
+    getUrl("/getfilelist?dir=config&t=" + Date.now(), function(ret) {
+        console.info(ret);
+        var json = JSON.parse(ret);
+        var html = json.map(function(d) {
+            configNames.push(d.replace(".json", ""));
+            return "<li>" + d + "</li>";
+        });
+
+        document.getElementById("runlist").innerHTML = html.join("");
+
+        ! function() {
+            function a(a) {
+                var b = document.getElementsByTagName("HEAD").item(0),
+                    c = document.createElement("script");
+                c.type = "text/javascript", c.src = a, b.appendChild(c)
+            }
+            var now = new Date();
+            a("https://log_2015.wilddogio.com/phantomStatistics/sum/" + now.getFullYear() + "/" + (now.getMonth() + 1) + "/" + now.getDate() + "/successNames.json?callback=statistresult&t=" + Date.now())
+        }();
+
+    });
+})();
+
+function statistresult(ret) {
+    console.info(ret);
+    if (ret && ret.length) {
+        // ret.forEach(function(element, index){
+
+        // });
+
+        // configNames.sort(function(a, b) {
+        //     var isAok = ret.indexOf(a) >= 0;
+        //     var isBok = ret.indexOf(b) >= 0;
+        //     if (isAok && isBok) {
+        //         if (a > b) return 1;
+        //         return -1;
+        //     }
+        //     if (isAok) {
+        //         return 1;
+        //     }
+        //     if (isBok) {
+        //         return -1;
+        //     }
+        //     if (a > b) return 1;
+        //     return -1;
+        // });
+    } else {
+        ret = [];
+    }
+    var html = configNames.map(function(d) {
+        var clsName = "fail";
+        if (ret.indexOf(d) >= 0) clsName = "success";
+        return "<li class='" + clsName + "'>" + d + "</li>";
+    });
+
+    document.getElementById("runlist").innerHTML = html.join("");
+}
+
+function listClick() {
+    var target = window.event.target;
+    if (target.tagName == "LI") {
+        var name = target.innerText;
+        if (confirm("运行：" + name + "?")) {
+            console.info(name);
+            getUrl("/run?name=" + encodeURIComponent(name) + "&t=" + Date.now(), function(ret) {
+                console.info(ret);
+                alert(name + "开始运行！");
+                reloadinfo();
+            });
+        }
+    }
+    //console.info(window.event.target);
+}
+
+function getUrl(url, fn) {
+    var req = new XMLHttpRequest();
+    req.open("GET", url, true);
+    console.debug("getUrl:", url);
+    req.onreadystatechange = function() {
+        if (req.readyState == 4) {
+            if (req.status == 200) {
+                if (req.responseText.indexOf("error:") == 0) {
+                    alert(req.responseText);
+                }
+                if (fn) fn(req.responseText);
+            } else {
+                console.info("getUrl Error:" + req.status + "\n" + url);
+                title = "getUrl Error:" + req.status;
+            }
+        }
+    };
+    req.send(null);
+}
+</script>
+
+</html>

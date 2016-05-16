@@ -1,20 +1,20 @@
 CACHE MANIFEST
 #2015-12-29 14:29:23
-/checkcode/nocode.png
-/checkcode/norun.png
-/checkcode/loading.gif
-/icon/nocode.png
-/icon/norun.png
-/icon/loading.png
-/icon/yzm.png
-/
-/list.html
-/checkcode.html
-/bats.html
-/checkcode.html
-/js/highcharts.js
-/js/jquery.min.js
-/home.html
+./checkcode/nocode.png
+./checkcode/norun.png
+./checkcode/loading.gif
+./icon/nocode.png
+./icon/norun.png
+./icon/loading.png
+./icon/yzm.png
+./
+./list.html
+./checkcode.html
+./bats.html
+./checkcode.html
+./js/highcharts.js
+./js/jquery.min.js
+./home.html
 
 NETWORK:
 *
